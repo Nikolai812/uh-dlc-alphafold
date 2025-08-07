@@ -16,10 +16,11 @@ def split_to_monosequence(input_path, output_subdir):
         for i, sequence in enumerate(sequences):
             lines = sequence.split('\n', 1)  # Split each sequence into header and body
             header = lines[0].strip()
+            seq_file_name = header.replace('|', '-').replace(',', '-').replace(' ', '-')
             body = lines[1].replace('\n', '') if len(lines) > 1 else ''  # Remove newlines from the body
 
             # Create a filename for the output file
-            output_filename = f"{pure_file_name}_{i+1}.fasta"
+            output_filename = f"{seq_file_name}.fasta"
             output_filepath = os.path.join(output_subdir, output_filename)
 
             # Write the sequence to the output file
