@@ -76,8 +76,8 @@ done
 echo "======================================================="
 echo "JOB ${SLURM_JOBID} completed at $(date)"
 echo "======================================================="
-echo"           "
-echo"           "
+echo "           "
+echo "           "
 
 echo "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 echo "Alphafold2 output processing at ${SLURM_JOBID}  the time: $(date)"
@@ -86,8 +86,8 @@ echo "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 # python3 output_name_update.py -i=137783 -p=./woutputs
 python3 output_name_update.py -i=${SLURM_JOBID} -p=${BASEDIR}/woutputs
 
-echo"           "
-echo"           "
+echo "           "
+echo "           "
 echo "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 echo "Alphafold2 postprocessing completed at time: $(date)"
 echo "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
