@@ -1,6 +1,7 @@
 import argparse
 import os
 import json
+import re
 import shutil
 from typing import List
 
@@ -110,6 +111,9 @@ def process_ranking_and_write_summary(job_folder: str, path: str = "."):
         # Add to the best_models_data dictionary
         best_models_data[f"{subfolder_name}_{best_model}"] = best_value
 
+        # Extract the best number from the best_model string
+        best_number = extract_best_number(best_model)
+
         # Find the corresponding PDB file
         pdb_file = os.path.join(subfolder_path, f"unrelaxed_{best_model}.pdb")
         if not os.path.exists(pdb_file):
@@ -119,7 +123,7 @@ def process_ranking_and_write_summary(job_folder: str, path: str = "."):
                 continue
 
         # Copy the PDB file to the processed directory with the new name
-        new_pdb_name = f"{subfolder_name}_best_unrelaxed_model.pdb"
+        new_pdb_name = f"{subfolder_name}_{best_number}.pdb"
         new_pdb_path = os.path.join(processed_path, new_pdb_name)
         shutil.copy(pdb_file, new_pdb_path)
         print(f"Copied {pdb_file} to {new_pdb_path}")
@@ -129,6 +133,15 @@ def process_ranking_and_write_summary(job_folder: str, path: str = "."):
     with open(best_models_file, 'w') as f:
         json.dump(best_models_data, f, indent=4)
     print(f"Best models data written to {best_models_file}")
+
+
+def extract_best_number(best_model: str) -> int:
+    # Extract the number between 'model_' and '_pred'
+    match = re.search(r'model_(\d+)_pred', best_model)
+    if match:
+        return int(match.group(1))
+    else:
+        raise ValueError(f"Could not extract best number from {best_model}")
 
 
 if __name__ == '__main__':
