@@ -144,24 +144,99 @@ def extract_best_number(best_model: str) -> int:
         raise ValueError(f"Could not extract best number from {best_model}")
 
 
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
-    parser.add_argument("-i", "--input_folder", dest="input_folder",
-                        help="input jobnumber folder",
-                        default="000000")
+def select_unrelaxed_to_or_based_output(job_folder: str, path: str, or_output_path: str) -> None:
+    job_path = os.path.join(path, job_folder)
 
-    parser.add_argument("-p", "--path", dest="folder_path",
-                        help="jobnumber folder path",
-                        default=".")
+    # Create the root OR-output directory if needed
+    os.makedirs(or_output_path, exist_ok=True)
+
+    # Iterate over the 1st-level subfolders inside the job_folder
+    for or_subfolder_name in os.listdir(job_path):
+        or_subfolder_path = os.path.join(job_path, or_subfolder_name)
+
+        # Skip non-directories
+        if not os.path.isdir(or_subfolder_path):
+            continue
+
+        print(f"\nProcessing subfolder: {or_subfolder_name}")
+        print(f"Source path      : {or_subfolder_path}")
+        print(f"Output root      : {or_output_path}")
+
+        # Create destination subfolder under OR-output path
+        dest_subfolder = os.path.join(or_output_path, or_subfolder_name)
+        os.makedirs(dest_subfolder, exist_ok=True)
+        print(f"Destination path : {dest_subfolder}")
+
+        # List all files in the current OR subfolder
+        for filename in os.listdir(or_subfolder_path):
+
+            # Files to copy:
+            # 1. those starting with 'unrelaxed_model'
+            # 2. or exactly 'ranking_debug.json'
+            if (
+                filename.startswith("unrelaxed_model")
+                or filename == "ranking_debug.json"
+            ):
+                src_file = os.path.join(or_subfolder_path, filename)
+
+                # ---- Construct new filename ----
+                # Prefix with OR subfolder name
+                new_filename = f"{or_subfolder_name}_{filename}"
+
+                # For unrelaxed_model files → remove "_pred_0" from the base name (if present),
+                # but keep the original file extension (e.g. .pdb)
+                if filename.startswith("unrelaxed_model"):
+                    name, ext = os.path.splitext(filename)  # split off extension (".pdb", ".txt", etc.)
+                    if name.endswith("_pred_0"):
+                        name = name[:-len("_pred_0")]  # remove the suffix from the base name
+                    new_filename = f"{or_subfolder_name}_{name}{ext}"
+
+                dest_file = os.path.join(dest_subfolder, new_filename)
+
+                # ---- Copy with overwrite ----
+                if os.path.exists(dest_file):
+                    print(f"⚠ File exists, will be overwritten: {dest_file}")
+                else:
+                    print(f"Copying file to {dest_file}")
+
+                shutil.copy2(src_file, dest_file)  # overwrite enabled
+
+    print("\n select_unrelaxed_to_or_based_output: \N{CHECK MARK} Done.\n")
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "-i", "--input_folder", dest="input_folder",
+        help="input jobnumber folder",
+        default="000000"
+    )
+
+    parser.add_argument(
+        "-p", "--path", dest="folder_path",
+        help="jobnumber folder path",
+        default="."
+    )
+
+    parser.add_argument(
+        "-o", "--or_output_path", dest="or_output_path",
+        help="output path based on OR, not job number",
+        default="."
+    )
 
     args = parser.parse_args()
-    input_folder = args.input_folder
+    job_folder = args.input_folder
     folder_path = args.folder_path
+    or_output_path = args.or_output_path
 
-# Updating of the job output folder is postponed, probably not needed at all
-#    include_sequence_name_into_output_filenames(job_folder=input_folder, path=folder_path)
+    # Selecting unrelaxed models and adding or_name in front,
+    # copying to or_name based folder (not recreating if folder exists),
+    # rewriting existing files
+    select_unrelaxed_to_or_based_output(job_folder, folder_path, or_output_path)
 
-# Here all output of the script is written to the newly created folder: old_name+processed
-process_ranking_and_write_summary(input_folder, folder_path)
+    # Here all output of the script is written to the newly created folder: old_name+processed
+    process_ranking_and_write_summary(job_folder, folder_path)
 
 
+if __name__ == '__main__':
+    main()

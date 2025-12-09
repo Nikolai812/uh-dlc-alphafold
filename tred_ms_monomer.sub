@@ -79,12 +79,14 @@ echo "======================================================="
 echo "           "
 echo "           "
 
+OR_OUTPUTS=${BASEDIR}/or_outputs
 echo "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 echo "Alphafold2 output processing at ${SLURM_JOBID}  the time: $(date)"
 echo "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 
 # python3 output_name_update.py -i=137783 -p=./woutputs
-python3 output_name_update.py -i=${SLURM_JOBID} -p=${BASEDIR}/woutputs
+# python3 output_name_update.py -i=137783 -p=./woutputs -o=./or_outputs
+python3 output_name_update.py -i=${SLURM_JOBID} -p=${BASEDIR}/woutputs -o=OR_OUTPUTS
 
 echo "           "
 echo "           "
