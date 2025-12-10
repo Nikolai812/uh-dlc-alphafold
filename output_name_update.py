@@ -105,8 +105,14 @@ def process_ranking_and_write_summary(job_folder: str, path: str = "."):
         # Get the first value from the "order" array
         best_model = ranking_data["order"][0]
 
-        # Get the corresponding pLDDT value
-        best_value = ranking_data["plddts"][best_model]
+        # Get the corresponding pLDDT or (in case of multimer) iptm+ptm value
+        scores = ranking_data.get("plddts") or ranking_data.get("iptm+ptm")
+        if scores is None:
+            print("")
+            print (" \N{ballot x} !!!KEY ERROR!!! Neither 'plddts' nor 'iptm+ptm' found in ranking file.")
+            print("")
+
+        best_value = scores[best_model]
 
         # Add to the best_models_data dictionary
         best_models_data[f"{subfolder_name}_{best_model}"] = best_value
